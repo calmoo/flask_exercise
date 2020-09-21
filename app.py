@@ -12,7 +12,6 @@ def get_todo():
         return jsonify(data[obj_id])
 
     if request.method == 'POST':
-        breakpoint()
         payload = request.form
         obj_id = payload["obj_id"]
         data[obj_id]= payload["text"]
