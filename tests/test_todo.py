@@ -7,7 +7,7 @@ class TestList:
     def test_empty(self, client: FlaskClient) -> None:
         res = client.get('/todo')
         data = res.get_json()
-        expected_data: None = None
+        expected_data: Dict = {}
         assert data == expected_data
 
     def test_not_empty(self, client: FlaskClient) -> None:
@@ -25,4 +25,15 @@ class TestList:
         expected_data = "test_text_edited"
         assert data == expected_data
 
+    def test_get_all(self, client: FlaskClient) -> None:
+        res = client.get('/todo')
+        data = res.get_json()
+        expected_data: Dict = {'0': 'test_text', '1': 'test_text_edited'}
+        assert data == expected_data
 
+    def test_delete(self, client: FlaskClient) -> None:
+        client.delete('/todo', data={"obj_id": 0})
+        res = client.get('/todo')
+        data = res.get_json()
+        expected_data: Dict = {'1': 'test_text_edited'}
+        assert data == expected_data
