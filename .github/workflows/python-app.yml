@@ -37,4 +37,4 @@ jobs:
       #  mypy tests app.py
     - name: Test with pytest
       run: |
-        python -m pytest
+        python -m pytest --cov-fail-under 100 --cov tests/ --cov app 

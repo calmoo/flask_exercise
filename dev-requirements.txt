@@ -1,2 +1,3 @@
 Pytest
 mypy
+pytest-cov
