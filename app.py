@@ -1,17 +1,31 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 import json
+from typing import Dict
 
 app = Flask(__name__)
-data = {}
+data: Dict[str, str] = {}
+
+"""
+{
+    '0': {'text': 'foo'}
+}
+"""
+
 
 
 @app.route('/todo', methods=['GET'])
-def get_todos():
+def get_todos() -> Response:
     if request.form:
         obj_id = request.form["obj_id"]
-        return jsonify(data[obj_id])
+        return Response(
+            response=json.dumps(data[obj_id]),
+            mimetype="application/json",
+        )
     else:
-        return jsonify(data)
+        return Response(
+            response=json.dumps(data),
+            mimetype="application/json",
+        )
 
 
 @app.route('/todo', methods=['POST'])

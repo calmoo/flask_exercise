@@ -1,6 +1,6 @@
 import json
 from flask.testing import FlaskClient
-from typing import List, Dict
+from typing import List, Dict, Generator
 
 
 class TestList:
