@@ -1,6 +1,6 @@
 import pytest
 
-from app import app as flask_app
+from todo_app.app import app as flask_app
 from flask.app import Flask
 from flask.testing import FlaskClient
 
