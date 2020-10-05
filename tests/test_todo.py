@@ -7,7 +7,7 @@ from todo_app.app import data
 
 class TestCreate:
     def test_create(self, client: FlaskClient) -> None:
-        post_res = client.post('/todo', data={"text": "test_text"})
+        post_res = client.post('/todo', json={"text": "test_text"})
         assert post_res.status_code == 201
 
 class TestGetAllTodos:
@@ -22,8 +22,8 @@ class TestGetAllTodos:
 
 
     def test_get_all(self, client: FlaskClient) -> None:
-        first_post = client.post('/todo', data={"text": "test_text"})
-        second_post = client.post('/todo', data={"text": "test_text_2"})
+        first_post = client.post('/todo', json={"text": "test_text"})
+        second_post = client.post('/todo', json={"text": "test_text_2"})
         first_obj_id = first_post.get_json()['obj_id']
         second_obj_id = second_post.get_json()['obj_id']
         res = client.get('/todo')
@@ -37,9 +37,9 @@ class TestGetAllTodos:
 
 class TestEdit:
     def test_exists(self, client: FlaskClient) -> None:
-        result_from_post = client.post('/todo', data={"text": "test_text"})
+        result_from_post = client.post('/todo', json={"text": "test_text"})
         obj_id = result_from_post.get_json()['obj_id']
-        patch_result = client.patch('/todo/' + obj_id, data={"text": "test_text_edited"})
+        patch_result = client.patch('/todo/' + obj_id, json={"text": "test_text_edited"})
         assert patch_result.status_code == 200
         res = client.get('/todo/' + obj_id)
         get_data = res.get_json()
@@ -48,13 +48,13 @@ class TestEdit:
 
     def test_does_not_exist(self, client: FlaskClient) -> None:
         data.clear()
-        patch_result = client.patch('/todo/1', data={"text": "test_text_edited"})
+        patch_result = client.patch('/todo/1', json={"text": "test_text_edited"})
         assert patch_result.status_code == 404
 
 class TestGetOneTodo:
 
     def test_exists(self, client: FlaskClient) -> None:
-        result_from_post = client.post('/todo', data={"text": "test_text"})
+        result_from_post = client.post('/todo', json={"text": "test_text"})
         obj_id = result_from_post.get_json()['obj_id']
         res = client.get('/todo/' + obj_id)
         get_data = res.get_json()
@@ -70,7 +70,7 @@ class TestGetOneTodo:
 class TestDelete:
 
     def test_exists(self, client: FlaskClient) -> None:
-        result_from_post = client.post('/todo', data={"text": "test_text"})
+        result_from_post = client.post('/todo', json={"text": "test_text"})
         obj_id = result_from_post.get_json()['obj_id']
         delete_res = client.delete('/todo/' + obj_id)
         get_data = client.get('/todo/' + obj_id)

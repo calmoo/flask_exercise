@@ -32,7 +32,7 @@ def get_todo(obj_id: str) -> Response:
 
 @app.route('/todo', methods=['POST'])
 def create_todo() -> Response:
-    payload = request.form
+    payload = request.json
     obj_id = uuid.uuid4().hex
     data[obj_id] = payload["text"]
 
@@ -51,7 +51,7 @@ def edit_todo(obj_id: str) -> Response:
             status=404
         )
 
-    payload = request.form
+    payload = request.json
     data[obj_id] = payload["text"]
 
 
