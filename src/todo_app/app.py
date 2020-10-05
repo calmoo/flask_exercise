@@ -13,23 +13,21 @@ data: Dict[str, str] = {}
 @app.route('/todo', methods=['GET'])
 def get_todos() -> Response:
 
-    if request.form:
-        obj_id = request.form["obj_id"]
-        if obj_id not in data:
-            return Response(
-                status=404
-            )
-        return Response(
-            response=json.dumps(data[obj_id]),
-            mimetype="application/json",
-        )
+    return Response(
+        response=json.dumps(data),
+        mimetype="application/json",
+    )
 
-    else:
+@app.route('/todo/<string:obj_id>', methods=['GET'])
+def get_todo(obj_id: str) -> Response:
+    if obj_id not in data:
         return Response(
-            response=json.dumps(data),
-            mimetype="application/json",
+            status=404
         )
-
+    return Response(
+        response=json.dumps(data[obj_id]),
+        mimetype="application/json",
+    )
 
 
 @app.route('/todo', methods=['POST'])
@@ -45,25 +43,24 @@ def create_todo() -> Response:
     )
 
 
-@app.route('/todo', methods=['PATCH'])
-def edit_todo() -> Response:
+@app.route('/todo/<string:obj_id>', methods=['PATCH'])
+def edit_todo(obj_id: str) -> Response:
 
-    payload = request.form
-    obj_id = request.form["obj_id"]
     if obj_id not in data:
         return Response(
             status=404
         )
+
+    payload = request.form
     data[obj_id] = payload["text"]
 
 
     return Response()
 
 
-@app.route('/todo', methods=['DELETE'])
-def delete_todo() -> Response:
-    payload = request.form
-    obj_id = request.form["obj_id"]
+@app.route('/todo/<string:obj_id>', methods=['DELETE'])
+def delete_todo(obj_id: str) -> Response:
+
     if obj_id not in data:
         return Response(
             status=404
