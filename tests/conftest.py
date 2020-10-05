@@ -11,6 +11,7 @@ def app() -> Flask:
 
 
 @pytest.fixture
-def client(app) -> FlaskClient:
+def client(app: Flask) -> FlaskClient:
+    breakpoint()
     mytestclient = app.test_client()
     return mytestclient

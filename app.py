@@ -5,13 +5,6 @@ from typing import Dict
 app = Flask(__name__)
 data: Dict[str, str] = {}
 
-"""
-{
-    '0': {'text': 'foo'}
-}
-"""
-
-
 
 @app.route('/todo', methods=['GET'])
 def get_todos() -> Response:
@@ -29,25 +22,31 @@ def get_todos() -> Response:
 
 
 @app.route('/todo', methods=['POST'])
-def create_todo():
+def create_todo() -> Response:
     payload = request.form
     obj_id = payload["obj_id"]
     data[obj_id] = payload["text"]
+
+    return Response()
 
 
 @app.route('/todo', methods=['PATCH'])
-def edit_todo():
+def edit_todo() -> Response:
     payload = request.form
     obj_id = payload["obj_id"]
     data[obj_id] = payload["text"]
 
+    return Response()
+
 
 @app.route('/todo', methods=['DELETE'])
-def delete_todo():
+def delete_todo() -> Response:
     payload = request.form
     obj_id = payload["obj_id"]
     del data[obj_id]
 
+    return Response()
 
-if __name__ == '__main__': # pragma: no cover
+
+if __name__ == '__main__':  # pragma: no cover
     app.run()
