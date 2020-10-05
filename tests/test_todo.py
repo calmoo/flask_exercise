@@ -7,14 +7,12 @@ from todo_app.app import data
 
 class TestCreate:
     def test_create(self, client: FlaskClient) -> None:
-        data.clear()
         post_res = client.post('/todo', data={"text": "test_text"})
         assert post_res.status_code == 201
 
 class TestGetAllTodos:
 
     def test_empty(self, client: FlaskClient) -> None:
-        data.clear()
         res = client.get('/todo')
 
         get_data = res.get_json()
@@ -24,7 +22,6 @@ class TestGetAllTodos:
 
 
     def test_get_all(self, client: FlaskClient) -> None:
-        data.clear()
         first_post = client.post('/todo', data={"text": "test_text"})
         second_post = client.post('/todo', data={"text": "test_text_2"})
         first_obj_id = first_post.get_json()['obj_id']
@@ -40,7 +37,6 @@ class TestGetAllTodos:
 
 class TestEdit:
     def test_exists(self, client: FlaskClient) -> None:
-        data.clear()
         result_from_post = client.post('/todo', data={"text": "test_text"})
         obj_id = result_from_post.get_json()['obj_id']
         patch_result = client.patch('/todo/' + obj_id, data={"text": "test_text_edited"})
@@ -58,7 +54,6 @@ class TestEdit:
 class TestGetOneTodo:
 
     def test_exists(self, client: FlaskClient) -> None:
-        data.clear()
         result_from_post = client.post('/todo', data={"text": "test_text"})
         obj_id = result_from_post.get_json()['obj_id']
         res = client.get('/todo/' + obj_id)
@@ -68,7 +63,6 @@ class TestGetOneTodo:
         assert get_data == expected_data
 
     def test_does_not_exist(self, client: FlaskClient) -> None:
-        data.clear()
         res = client.get('/todo/1')
         assert res.status_code == 404
 
@@ -76,7 +70,6 @@ class TestGetOneTodo:
 class TestDelete:
 
     def test_exists(self, client: FlaskClient) -> None:
-        data.clear()
         result_from_post = client.post('/todo', data={"text": "test_text"})
         obj_id = result_from_post.get_json()['obj_id']
         delete_res = client.delete('/todo/' + obj_id)
@@ -86,6 +79,5 @@ class TestDelete:
         assert get_data.status_code == 404
 
     def test_does_not_exist(self, client: FlaskClient) -> None:
-        data.clear()
         delete_res = client.delete('/todo/1')
         assert delete_res.status_code == 404
