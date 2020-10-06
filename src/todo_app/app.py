@@ -2,8 +2,12 @@ from flask import Flask, Response, request
 import uuid
 import json
 from typing import Dict
+from . import db
 
 app = Flask(__name__)
+app.config['DATABASE'] = ":memory:"
+db.init_app(app)
+
 
 data: Dict[str, str] = {}
 
