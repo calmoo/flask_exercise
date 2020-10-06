@@ -3,8 +3,10 @@ from typing import Dict
 from todo_app.app import data
 
 
+
 class TestCreate:
     def test_create(self, client: FlaskClient) -> None:
+
         post_res = client.post("/todo", json={"text": "test_text"})
         assert post_res.status_code == 201
 
@@ -21,6 +23,7 @@ class TestGetAllTodos:
     def test_get_all(self, client: FlaskClient) -> None:
         first_post = client.post("/todo", json={"text": "test_text"})
         second_post = client.post("/todo", json={"text": "test_text_2"})
+
         first_obj_id = first_post.get_json()["obj_id"]
         second_obj_id = second_post.get_json()["obj_id"]
         res = client.get("/todo")
