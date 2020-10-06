@@ -59,8 +59,22 @@ pip install -r dev-requirements.txt
 pytest
 ```
 
+## To run in Docker
+
+Install Docker
+
+```
+docker build -t todo_app . 
+docker run -p 5000:5000 todo_app
+```
+
+Example curl:
+
+```
+curl -H "Content-type: application/json" -X POST 127.0.0.1:5000/todo -d '{"text":"Hello Data"}'
+```
+
 ## Next steps
 
-* Dockerize
 * Right now all the TODOs are stored in memory. Let's swap to a real database
 * Authentication / Authorization for user-specific TODOs
