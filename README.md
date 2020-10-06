@@ -54,6 +54,7 @@ Tests are run on Github actions
 To run tests locally:
 
 ```
+pip install --editable .   
 pip install -r dev-requirements.txt
 pytest
 ```
