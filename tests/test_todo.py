@@ -50,7 +50,6 @@ class TestEdit:
         assert get_data == expected_data
 
     def test_does_not_exist(self, client: FlaskClient) -> None:
-        data.clear()
         patch_result = client.patch(
             "/todo/1",
             json={"text": "test_text_edited"},

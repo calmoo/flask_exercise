@@ -47,12 +47,18 @@ def get_todos() -> Response:
 
 @app.route("/todo/<string:obj_id>", methods=["GET"])
 def get_todo(obj_id: str) -> Response:
-    if obj_id not in data:
+
+    # if obj_id not in data:
+    #     return Response(status=404)
+
+    todo = Todo.query.filter_by(id=obj_id).first()
+    if todo:
+        return Response(
+            response=json.dumps(todo.text),
+            mimetype="application/json",
+        )
+    else:
         return Response(status=404)
-    return Response(
-        response=json.dumps(data[obj_id]),
-        mimetype="application/json",
-    )
 
 
 @app.route("/todo", methods=["POST"])
@@ -61,7 +67,6 @@ def create_todo() -> Response:
     todo = Todo(text=payload["text"])
     db.session.add(todo)
     db.session.commit()
-    db.session.flush()
 
     return Response(
         response=json.dumps({"obj_id": str(todo.id)}),
@@ -77,21 +82,24 @@ def edit_todo(obj_id: str) -> Response:
     payload = request.json
     payload_text = payload["text"]
     todo = Todo.query.filter_by(id=obj_id).first()
-    breakpoint()
-    todo.text = payload_text
-    db.session.flush()
-    db.session.commit()
-    return Response()
+    if todo:
+        todo.text = payload_text
+        db.session.commit()
+        return Response()
+    else:
+        return Response(status=404)
 
 
 @app.route("/todo/<string:obj_id>", methods=["DELETE"])
 def delete_todo(obj_id: str) -> Response:
 
-    if obj_id not in data:
+    todo = Todo.query.filter_by(id=obj_id).first()
+    if todo:
+        db.session.delete(todo)
+        db.session.commit()
+        return Response()
+    else:
         return Response(status=404)
-    del data[obj_id]
-
-    return Response()
 
 
 if __name__ == "__main__":  # pragma: no cover
