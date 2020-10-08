@@ -1,7 +1,5 @@
 from flask.testing import FlaskClient
 from typing import Dict
-from todo_app.app import data
-
 
 
 class TestCreate:
@@ -15,7 +13,7 @@ class TestGetAllTodos:
     def test_empty(self, client: FlaskClient) -> None:
         res = client.get("/todo")
 
-        res.get_json()
+        data = res.get_json()
         assert res.status_code == 200
         expected_data: Dict = {}
         assert data == expected_data
