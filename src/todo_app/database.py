@@ -13,3 +13,4 @@ poolclass=StaticPool
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base.metadata.create_all(engine)
+db = SessionLocal()
