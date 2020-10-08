@@ -2,3 +2,4 @@ Pytest
 mypy
 pytest-cov
 flake8
+sqlalchemy-stubs
