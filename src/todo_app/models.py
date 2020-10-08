@@ -1,6 +1,8 @@
 from sqlalchemy import Column, Integer, String
-from .database import Base
+from sqlalchemy.ext.declarative import declarative_base
 
+
+Base = declarative_base()
 
 class Todo(Base):
     __tablename__ = "Todos"

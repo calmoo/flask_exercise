@@ -13,7 +13,7 @@ def app() -> Flask:
 
 @pytest.fixture
 def client(app: Flask) -> FlaskClient:
-    db.drop_all()
-    db.create_all()
+   # db.drop_all()
+    #db.create_all()
     mytestclient = app.test_client()
     return mytestclient
