@@ -1,18 +1,24 @@
-from flask import Flask, Response, request, _app_ctx_stack
+from flask import Flask, Response, request
 import json
 from . import models
-from .database import SessionLocal, engine, db
 from sqlalchemy.orm import scoped_session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+from .models import Base
+
+SQLALCHEMY_DATABASE_URL = "sqlite://"
+
+engine = create_engine(SQLALCHEMY_DATABASE_URL, poolclass=StaticPool)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base.metadata.create_all(engine)
+
 
 app = Flask(__name__)
-#app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite://"
-app.config['PROPAGATE_EXCEPTIONS'] = True
-
+app.config["PROPAGATE_EXCEPTIONS"] = True
 models.Base.metadata.create_all(bind=engine)
 
-app.session = scoped_session(SessionLocal, scopefunc=_app_ctx_stack.__ident_func__)
-
-
+app.session = scoped_session(SessionLocal)
 
 
 @app.route("/todo", methods=["GET"])
@@ -57,7 +63,6 @@ def create_todo() -> Response:
     app.session.close()
 
     return response
-
 
 
 @app.route("/todo/<string:obj_id>", methods=["PATCH"])
