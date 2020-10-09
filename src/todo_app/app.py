@@ -139,11 +139,12 @@ def user_login() -> Response:
 
 @app.route('/protected', methods=['GET'])
 @jwt_required
-def protected():
+def protected() -> Response:
     # Access the identity of the current user with get_jwt_identity
     current_user = get_jwt_identity()
     return Response(
         response=json.dumps({"logged_in_as":current_user}),
+        mimetype="application/json",
         status=200)
 
 

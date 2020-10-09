@@ -74,11 +74,10 @@ class TestDelete:
     def test_exists(self, client: FlaskClient) -> None:
         result_from_post = client.post("/todo", json={"text": "test_text"})
         obj_id = result_from_post.get_json()["obj_id"]
-        client.delete("/todo/" + obj_id)
-        # get_data = client.get("/todo/" + obj_id)
-        # assert delete_res.status_code == 200
-        # get_data = client.get("/todo/" + obj_id)
-        # assert get_data.status_code == 404
+        delete_res = client.delete("/todo/" + obj_id)
+        assert delete_res.status_code == 200
+        get_data = client.get("/todo/" + obj_id)
+        assert get_data.status_code == 404
 
     def test_does_not_exist(self, client: FlaskClient) -> None:
         delete_res = client.delete("/todo/1")
@@ -119,14 +118,12 @@ class TestUserLogin:
 
         assert result_from_login.status_code == 401
 
-    def test_user_identity(self, client: FlaskClient) -> None:
+    def test_user_identity_from_jwt_token(self, client: FlaskClient) -> None:
         credentials = {"email": "test@example.com", "password": "example_password"}
         result_from_signup = client.post("/auth/signup", json=credentials)
         assert result_from_signup.status_code == 201
         result_from_login = client.post("/auth/login", json=credentials)
         assert result_from_login.status_code == 200
-        jwt_token = result_from_login.get_json()["token"]
-        breakpoint()
-        result_from_bearer_token = client.get("/protected", headers={'Authorization': 'Bearer ' + jwt_token})
-
-        assert "moo" == result_from_bearer_token.data
+        jwt_token = "Bearer " + result_from_login.get_json()["token"]
+        result_from_bearer_token = client.get("/protected", headers={'Authorization': jwt_token})
+        assert  {'logged_in_as': 'test@example.com'} == result_from_bearer_token.get_json()
