@@ -83,3 +83,16 @@ class TestDelete:
     def test_does_not_exist(self, client: FlaskClient) -> None:
         delete_res = client.delete("/todo/1")
         assert delete_res.status_code == 404
+
+class TestUserCreate:
+    def test_user_does_not_exist(self, client: FlaskClient) -> None:
+        credentials = {"email":"test@example.com", "password":"example_password"}
+        result_from_post = client.post("/auth/signup", json=credentials)
+        assert result_from_post.status_code == 201
+
+    def test_user_already_exists(self, client: FlaskClient) -> None:
+        credentials = {"email":"test@example.com", "password":"example_password"}
+        result_from_post = client.post("/auth/signup", json=credentials)
+        assert result_from_post.status_code == 201
+        result_from_second_post = client.post("/auth/signup", json=credentials)
+        assert result_from_second_post.status_code == 409

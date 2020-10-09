@@ -1,11 +1,14 @@
 from flask import Flask, Response, request
 import json
 from . import models
+from flask_bcrypt import Bcrypt
 from sqlalchemy.orm import scoped_session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from .models import Base
+
+
 
 SQLALCHEMY_DATABASE_URL = "sqlite://"
 
@@ -17,9 +20,8 @@ Base.metadata.create_all(engine)
 app = Flask(__name__)
 app.config["PROPAGATE_EXCEPTIONS"] = True
 models.Base.metadata.create_all(bind=engine)
-
+bcrypt = Bcrypt(app)
 app.session = scoped_session(SessionLocal)
-
 
 @app.route("/todo", methods=["GET"])
 def get_todos() -> Response:
@@ -90,6 +92,30 @@ def delete_todo(obj_id: str) -> Response:
         return Response()
     else:
         return Response(status=404)
+
+@app.route("/auth/signup", methods=["POST"])
+def user_signup() -> Response:
+    payload = request.json
+    user = models.User(email=payload["email"], password=payload["password"])
+    exists = app.session.query(models.User).filter_by(email=user.email).first()
+
+    if exists:
+        return Response(
+            response=json.dumps({"Error": "Email already exists"}),
+            status=409
+        )
+    user.hash_password()
+    app.session.add(user)
+    app.session.commit()
+    id = user.id
+    response = Response(
+        response=json.dumps({"id": str(id)}),
+        mimetype="application/json",
+        status=201,
+    )
+    app.session.close()
+    return response
+
 
 
 if __name__ == "__main__":  # pragma: no cover
