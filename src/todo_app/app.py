@@ -7,6 +7,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from .models import Base
+from flask_jwt_extended import JWTManager, create_access_token
+import datetime
+
 
 
 
@@ -19,8 +22,10 @@ Base.metadata.create_all(engine)
 
 app = Flask(__name__)
 app.config["PROPAGATE_EXCEPTIONS"] = True
+app.config.from_envvar('ENV_FILE_LOCATION')
 models.Base.metadata.create_all(bind=engine)
 bcrypt = Bcrypt(app)
+jwt = JWTManager(app)
 app.session = scoped_session(SessionLocal)
 
 @app.route("/todo", methods=["GET"])
@@ -115,6 +120,24 @@ def user_signup() -> Response:
     )
     app.session.close()
     return response
+
+@app.route("/auth/login", methods=["POST"])
+def user_login() -> Response:
+    payload = request.json
+    user = app.session.query(models.User).filter_by(email=payload["email"]).first()
+    authorized = user.check_password(password=payload["password"])
+    if not authorized:
+        return Response(
+            response=json.dumps({"Error": "Email already exists"}),
+            status=401
+        )
+    expires = datetime.timedelta(days=7)
+    access_token = create_access_token(identity=str(user.id), expires_delta=expires)
+    return Response(
+        response=json.dumps({'token': access_token}),
+        mimetype="application/json",
+        status=200,
+    )
 
 
 
