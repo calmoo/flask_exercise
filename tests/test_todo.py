@@ -84,18 +84,20 @@ class TestDelete:
         delete_res = client.delete("/todo/1")
         assert delete_res.status_code == 404
 
+
 class TestUserCreate:
     def test_user_does_not_exist(self, client: FlaskClient) -> None:
-        credentials = {"email":"test@example.com", "password":"example_password"}
+        credentials = {"email": "test@example.com", "password": "example_password"}
         result_from_post = client.post("/auth/signup", json=credentials)
         assert result_from_post.status_code == 201
 
     def test_user_already_exists(self, client: FlaskClient) -> None:
-        credentials = {"email":"test@example.com", "password":"example_password"}
+        credentials = {"email": "test@example.com", "password": "example_password"}
         result_from_post = client.post("/auth/signup", json=credentials)
         assert result_from_post.status_code == 201
         result_from_second_post = client.post("/auth/signup", json=credentials)
         assert result_from_second_post.status_code == 409
+
 
 class TestUserLogin:
     def test_user_login_success(self, client: FlaskClient) -> None:
@@ -108,7 +110,10 @@ class TestUserLogin:
 
     def test_user_login_wrong_credentials(self, client: FlaskClient) -> None:
         credentials = {"email": "test@example.com", "password": "example_password"}
-        credentials_wrong_password = {"email": "test@example.com", "password": "example_password_1"}
+        credentials_wrong_password = {
+            "email": "test@example.com",
+            "password": "example_password_1",
+        }
         result_from_signup = client.post("/auth/signup", json=credentials)
         assert result_from_signup.status_code == 201
         result_from_login = client.post("/auth/login", json=credentials_wrong_password)

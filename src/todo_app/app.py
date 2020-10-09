@@ -7,10 +7,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from .models import Base
-from flask_jwt_extended import JWTManager, create_access_token
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import datetime
-
-
 
 
 SQLALCHEMY_DATABASE_URL = "sqlite://"
@@ -22,12 +20,13 @@ Base.metadata.create_all(engine)
 
 app = Flask(__name__)
 app.config["PROPAGATE_EXCEPTIONS"] = True
-app.config.from_envvar('ENV_FILE_LOCATION')
+app.config.from_envvar("ENV_FILE_LOCATION")
 models.Base.metadata.create_all(bind=engine)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 app.session = scoped_session(SessionLocal)
 
+@jwt_required
 @app.route("/todo", methods=["GET"])
 def get_todos() -> Response:
     all_todos = app.session.query(models.Todo).all()
@@ -42,6 +41,7 @@ def get_todos() -> Response:
 
 
 @app.route("/todo/<string:obj_id>", methods=["GET"])
+@jwt_required
 def get_todo(obj_id: str) -> Response:
 
     todo = app.session.query(models.Todo).filter_by(id=obj_id).first()
@@ -55,9 +55,11 @@ def get_todo(obj_id: str) -> Response:
 
 
 @app.route("/todo", methods=["POST"])
+@jwt_required
 def create_todo() -> Response:
+    user_id = get_jwt_identity()
     payload = request.json
-    todo = models.Todo(text=payload["text"])
+    todo = models.Todo(text=payload["text"], owner=user_id)
     app.session.add(todo)
     app.session.commit()
 
@@ -73,6 +75,7 @@ def create_todo() -> Response:
 
 
 @app.route("/todo/<string:obj_id>", methods=["PATCH"])
+@jwt_required
 def edit_todo(obj_id: str) -> Response:
 
     payload = request.json
@@ -87,6 +90,7 @@ def edit_todo(obj_id: str) -> Response:
 
 
 @app.route("/todo/<string:obj_id>", methods=["DELETE"])
+@jwt_required
 def delete_todo(obj_id: str) -> Response:
 
     todo = app.session.query(models.Todo).filter_by(id=obj_id).first()
@@ -106,8 +110,7 @@ def user_signup() -> Response:
 
     if exists:
         return Response(
-            response=json.dumps({"Error": "Email already exists"}),
-            status=409
+            response=json.dumps({"Error": "Email already exists"}), status=409
         )
     user.hash_password()
     app.session.add(user)
@@ -121,6 +124,7 @@ def user_signup() -> Response:
     app.session.close()
     return response
 
+
 @app.route("/auth/login", methods=["POST"])
 def user_login() -> Response:
     payload = request.json
@@ -128,17 +132,15 @@ def user_login() -> Response:
     authorized = user.check_password(password=payload["password"])
     if not authorized:
         return Response(
-            response=json.dumps({"Error": "Email already exists"}),
-            status=401
+            response=json.dumps({"Error": "Email already exists"}), status=401
         )
     expires = datetime.timedelta(days=7)
     access_token = create_access_token(identity=str(user.id), expires_delta=expires)
     return Response(
-        response=json.dumps({'token': access_token}),
+        response=json.dumps({"token": access_token}),
         mimetype="application/json",
         status=200,
     )
-
 
 
 if __name__ == "__main__":  # pragma: no cover
