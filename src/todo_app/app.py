@@ -26,7 +26,6 @@ bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 app.session = scoped_session(SessionLocal)
 
-@jwt_required
 @app.route("/todo", methods=["GET"])
 def get_todos() -> Response:
     all_todos = app.session.query(models.Todo).all()
@@ -41,7 +40,6 @@ def get_todos() -> Response:
 
 
 @app.route("/todo/<string:obj_id>", methods=["GET"])
-@jwt_required
 def get_todo(obj_id: str) -> Response:
 
     todo = app.session.query(models.Todo).filter_by(id=obj_id).first()
@@ -55,7 +53,6 @@ def get_todo(obj_id: str) -> Response:
 
 
 @app.route("/todo", methods=["POST"])
-@jwt_required
 def create_todo() -> Response:
     user_id = get_jwt_identity()
     payload = request.json
@@ -75,7 +72,6 @@ def create_todo() -> Response:
 
 
 @app.route("/todo/<string:obj_id>", methods=["PATCH"])
-@jwt_required
 def edit_todo(obj_id: str) -> Response:
 
     payload = request.json
@@ -90,7 +86,6 @@ def edit_todo(obj_id: str) -> Response:
 
 
 @app.route("/todo/<string:obj_id>", methods=["DELETE"])
-@jwt_required
 def delete_todo(obj_id: str) -> Response:
 
     todo = app.session.query(models.Todo).filter_by(id=obj_id).first()
@@ -132,15 +127,24 @@ def user_login() -> Response:
     authorized = user.check_password(password=payload["password"])
     if not authorized:
         return Response(
-            response=json.dumps({"Error": "Email already exists"}), status=401
+            response=json.dumps({"Error": "Password incorrect"}), status=401
         )
     expires = datetime.timedelta(days=7)
-    access_token = create_access_token(identity=str(user.id), expires_delta=expires)
+    access_token = create_access_token(identity=user.email, expires_delta=expires)
     return Response(
         response=json.dumps({"token": access_token}),
         mimetype="application/json",
         status=200,
     )
+
+@app.route('/protected', methods=['GET'])
+@jwt_required
+def protected():
+    # Access the identity of the current user with get_jwt_identity
+    current_user = get_jwt_identity()
+    return Response(
+        response=json.dumps({"logged_in_as":current_user}),
+        status=200)
 
 
 if __name__ == "__main__":  # pragma: no cover

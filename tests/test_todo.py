@@ -105,7 +105,6 @@ class TestUserLogin:
         result_from_signup = client.post("/auth/signup", json=credentials)
         assert result_from_signup.status_code == 201
         result_from_login = client.post("/auth/login", json=credentials)
-        breakpoint()
         assert result_from_login.status_code == 200
 
     def test_user_login_wrong_credentials(self, client: FlaskClient) -> None:
@@ -119,3 +118,15 @@ class TestUserLogin:
         result_from_login = client.post("/auth/login", json=credentials_wrong_password)
 
         assert result_from_login.status_code == 401
+
+    def test_user_identity(self, client: FlaskClient) -> None:
+        credentials = {"email": "test@example.com", "password": "example_password"}
+        result_from_signup = client.post("/auth/signup", json=credentials)
+        assert result_from_signup.status_code == 201
+        result_from_login = client.post("/auth/login", json=credentials)
+        assert result_from_login.status_code == 200
+        jwt_token = result_from_login.get_json()["token"]
+        breakpoint()
+        result_from_bearer_token = client.get("/protected", headers={'Authorization': 'Bearer ' + jwt_token})
+
+        assert "moo" == result_from_bearer_token.data
