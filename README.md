@@ -13,18 +13,7 @@ pip install .
 
 ## How to use this
 
-You'll need to create a secrets file, for example `.env`, with a `JWT_SECRET_KEY` variable. This can be any long string,
-choose it as you would a strong password.
 
-Example:
-```
-JWT_SECRET_KEY = '8x8phpPcQKDeSqsZz9RE'
-```
-You will then need to set an environment variable that points the full path of that secrets file. The example belows
-assumes .env is in the same directory as `app.py`:
-```
-export ENV_FILE_LOCATION=.env 
-```
 First set up the environment
 
 ```
