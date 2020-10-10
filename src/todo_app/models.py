@@ -11,7 +11,7 @@ class Todo(Base):
     __tablename__ = "Todos"
     id = Column(Integer, unique=True, primary_key=True, autoincrement=True)
     text = Column(String(), nullable=False)
-    owner  = Column(Integer, ForeignKey('users.email'))
+    owner = Column(Integer, ForeignKey("users.id"))
 
 
 class User(Base):
@@ -20,6 +20,7 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
     todos = relationship("Todo")
+
     def hash_password(self) -> None:
         self.password = generate_password_hash(self.password).decode("utf8")
 

@@ -7,7 +7,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from .models import Base
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    jwt_required,
+    get_jwt_identity,
+)
 import datetime
 
 
@@ -30,8 +35,10 @@ app.session = scoped_session(SessionLocal)
 @app.route("/todo", methods=["GET"])
 @jwt_required
 def get_todos() -> Response:
-    email = get_jwt_identity()
-    all_todos = app.session.query(models.Todo).filter_by(owner=email).all()
+    requester_user_id = get_jwt_identity()
+    all_todos = (
+        app.session.query(models.Todo).filter_by(owner=requester_user_id).all()
+    )
     my_dict = dict()
     for item in all_todos:
         my_dict[item.id] = item.text
@@ -45,23 +52,26 @@ def get_todos() -> Response:
 @app.route("/todo/<string:obj_id>", methods=["GET"])
 @jwt_required
 def get_todo(obj_id: str) -> Response:
-    email = get_jwt_identity()
-    todo = app.session.query(models.Todo).filter_by(id=obj_id, owner=email).first()
+    requester_email = get_jwt_identity()
+    todo = app.session.query(models.Todo).filter_by(id=obj_id).first()
     if todo:
-        return Response(
-            response=json.dumps(todo.text),
-            mimetype="application/json",
-        )
-    else:
-        return Response(status=404)
+        if todo.owner == requester_email:
+            return Response(
+                response=json.dumps(todo.text),
+                mimetype="application/json",
+            )
+        else:
+            return Response(status=403)
+
+    return Response(status=404)
 
 
 @app.route("/todo", methods=["POST"])
 @jwt_required
 def create_todo() -> Response:
-    email = get_jwt_identity()
+    requester_user_id = get_jwt_identity()
     payload = request.json
-    todo = models.Todo(text=payload["text"], owner=email)
+    todo = models.Todo(text=payload["text"], owner=requester_user_id)
     app.session.add(todo)
     app.session.commit()
 
@@ -79,23 +89,30 @@ def create_todo() -> Response:
 @app.route("/todo/<string:obj_id>", methods=["PATCH"])
 @jwt_required
 def edit_todo(obj_id: str) -> Response:
-    email = get_jwt_identity()
+    requester_user_id = get_jwt_identity()
     payload = request.json
     payload_text = payload["text"]
-    todo = app.session.query(models.Todo).filter_by(id=obj_id, owner=email).first()
+    todo = app.session.query(models.Todo).filter_by(id=obj_id).first()
     if todo:
+        if todo.owner != requester_user_id:
+            return Response(status=403)
+
         todo.text = payload_text
         app.session.commit()
         return Response()
-    else:
-        return Response(status=404)
+
+    return Response(status=404)
 
 
 @app.route("/todo/<string:obj_id>", methods=["DELETE"])
 @jwt_required
 def delete_todo(obj_id: str) -> Response:
     email = get_jwt_identity()
-    todo = app.session.query(models.Todo).filter_by(id=obj_id, owner=email).first()
+    todo = (
+        app.session.query(models.Todo)
+        .filter_by(id=obj_id, owner=email)
+        .first()
+    )
 
     if todo:
         app.session.delete(todo)
@@ -103,6 +120,7 @@ def delete_todo(obj_id: str) -> Response:
         return Response()
     else:
         return Response(status=404)
+
 
 @app.route("/auth/signup", methods=["POST"])
 def user_signup() -> Response:
@@ -117,9 +135,9 @@ def user_signup() -> Response:
     user.hash_password()
     app.session.add(user)
     app.session.commit()
-    id = user.id
+    user_id = user.id
     response = Response(
-        response=json.dumps({"id": str(id)}),
+        response=json.dumps({"id": str(user_id)}),
         mimetype="application/json",
         status=201,
     )
@@ -130,29 +148,35 @@ def user_signup() -> Response:
 @app.route("/auth/login", methods=["POST"])
 def user_login() -> Response:
     payload = request.json
-    user = app.session.query(models.User).filter_by(email=payload["email"]).first()
+    user = (
+        app.session.query(models.User)
+        .filter_by(email=payload["email"])
+        .first()
+    )
     authorized = user.check_password(password=payload["password"])
     if not authorized:
         return Response(
             response=json.dumps({"Error": "Password incorrect"}), status=401
         )
     expires = datetime.timedelta(days=7)
-    access_token = create_access_token(identity=user.email, expires_delta=expires)
+    access_token = create_access_token(identity=user.id, expires_delta=expires)
     return Response(
         response=json.dumps({"token": access_token}),
         mimetype="application/json",
         status=200,
     )
 
-@app.route('/protected', methods=['GET'])
+
+@app.route("/protected", methods=["GET"])
 @jwt_required
 def protected() -> Response:
     # Access the identity of the current user with get_jwt_identity
     current_user = get_jwt_identity()
     return Response(
-        response=json.dumps({"logged_in_as":current_user}),
+        response=json.dumps({"logged_in_as": current_user}),
         mimetype="application/json",
-        status=200)
+        status=200,
+    )
 
 
 if __name__ == "__main__":  # pragma: no cover
