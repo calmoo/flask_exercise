@@ -1,3 +1,4 @@
+import os
 from flask import Flask, Response, request
 import json
 from . import models
@@ -15,17 +16,18 @@ from flask_jwt_extended import (
 )
 import datetime
 
-
 SQLALCHEMY_DATABASE_URL = "sqlite://"
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL, poolclass=StaticPool)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base.metadata.create_all(engine)
 
-
 app = Flask(__name__)
 app.config["PROPAGATE_EXCEPTIONS"] = True
-app.config.from_envvar("ENV_FILE_LOCATION")
+app.config["JWT_SECRET_KEY"] = os.environ.get(
+    "JWT_SECRET_KEY",
+    "backup-secret-key",
+)
 models.Base.metadata.create_all(bind=engine)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
@@ -172,8 +174,10 @@ def user_login() -> Response:
 def protected() -> Response:
     # Access the identity of the current user with get_jwt_identity
     current_user = get_jwt_identity()
+    user = app.session.query(models.User).filter_by(id=current_user).first()
+
     return Response(
-        response=json.dumps({"logged_in_as": current_user}),
+        response=json.dumps({"logged_in_as": user.email}),
         mimetype="application/json",
         status=200,
     )

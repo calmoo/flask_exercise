@@ -181,7 +181,9 @@ class TestUserLogin:
         result_from_bearer_token = client.get(
             "/protected", headers={"Authorization": jwt_token}
         )
-        assert {"logged_in_as": 1} == result_from_bearer_token.get_json()
+        assert {
+            "logged_in_as": "test@example.com"
+        } == result_from_bearer_token.get_json()
 
 
 class TestOwnershipOfTodos:
