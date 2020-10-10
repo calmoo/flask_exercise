@@ -26,9 +26,12 @@ bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 app.session = scoped_session(SessionLocal)
 
+
 @app.route("/todo", methods=["GET"])
+@jwt_required
 def get_todos() -> Response:
-    all_todos = app.session.query(models.Todo).all()
+    email = get_jwt_identity()
+    all_todos = app.session.query(models.Todo).filter_by(owner=email).all()
     my_dict = dict()
     for item in all_todos:
         my_dict[item.id] = item.text
@@ -40,9 +43,10 @@ def get_todos() -> Response:
 
 
 @app.route("/todo/<string:obj_id>", methods=["GET"])
+@jwt_required
 def get_todo(obj_id: str) -> Response:
-
-    todo = app.session.query(models.Todo).filter_by(id=obj_id).first()
+    email = get_jwt_identity()
+    todo = app.session.query(models.Todo).filter_by(id=obj_id, owner=email).first()
     if todo:
         return Response(
             response=json.dumps(todo.text),
@@ -53,10 +57,11 @@ def get_todo(obj_id: str) -> Response:
 
 
 @app.route("/todo", methods=["POST"])
+@jwt_required
 def create_todo() -> Response:
-    user_id = get_jwt_identity()
+    email = get_jwt_identity()
     payload = request.json
-    todo = models.Todo(text=payload["text"], owner=user_id)
+    todo = models.Todo(text=payload["text"], owner=email)
     app.session.add(todo)
     app.session.commit()
 
@@ -72,11 +77,12 @@ def create_todo() -> Response:
 
 
 @app.route("/todo/<string:obj_id>", methods=["PATCH"])
+@jwt_required
 def edit_todo(obj_id: str) -> Response:
-
+    email = get_jwt_identity()
     payload = request.json
     payload_text = payload["text"]
-    todo = app.session.query(models.Todo).filter_by(id=obj_id).first()
+    todo = app.session.query(models.Todo).filter_by(id=obj_id, owner=email).first()
     if todo:
         todo.text = payload_text
         app.session.commit()
@@ -86,9 +92,10 @@ def edit_todo(obj_id: str) -> Response:
 
 
 @app.route("/todo/<string:obj_id>", methods=["DELETE"])
+@jwt_required
 def delete_todo(obj_id: str) -> Response:
-
-    todo = app.session.query(models.Todo).filter_by(id=obj_id).first()
+    email = get_jwt_identity()
+    todo = app.session.query(models.Todo).filter_by(id=obj_id, owner=email).first()
 
     if todo:
         app.session.delete(todo)

@@ -17,3 +17,11 @@ def client(app: Flask) -> FlaskClient:
     app.session.query(User).delete()
     mytestclient = app.test_client()
     return mytestclient
+
+@pytest.fixture
+def jwt_token(client: FlaskClient) -> str:
+    credentials = {"email": "test@example.com", "password": "example_password"}
+    client.post("/auth/signup", json=credentials)
+    result_from_login = client.post("/auth/login", json=credentials)
+    jwt_token = "Bearer " + result_from_login.get_json()["token"]
+    return jwt_token
