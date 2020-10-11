@@ -22,32 +22,6 @@ export FLASK_APP="src/todo_app/app.py"
 Flask run
 ```
 
-Here are some examples of interacting with the API with curl:
-
-Add a TODO
-```
-curl -H "Content-type: application/json" \
--X POST http://127.0.0.1:5000/todo -d '{"text":"Hello Data"}'
-```
-List TODOs
-```
-curl -H "Content-type: application/json" \
--X GET http://127.0.0.1:5000/todo
-```
-
-Edit TODOs (retain ObjectID)
-
-```
-curl -H "Content-type: application/json" \
--X PATCH http://127.0.0.1:5000/todo/<object_id> \
--d '{"text": "Edit my data"}'
-```
-
-Delete a TODO
-```
-curl -H "Content-type: application/json" \
--X DELETE http://127.0.0.1:5000/todo/<object_id>
-```
 
 ## Running the tests
 
