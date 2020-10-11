@@ -1,3 +1,7 @@
+"""
+Flask application for Todo API.
+"""
+
 import os
 from flask import Flask, Response, request
 import json
@@ -37,6 +41,9 @@ app.session = scoped_session(SessionLocal)
 @app.route("/todo", methods=["GET"])
 @jwt_required
 def get_todos() -> Response:
+    """
+    Return all Todo items.
+    """
     requester_user_id = get_jwt_identity()
     all_todos = (
         app.session.query(models.Todo).filter_by(owner=requester_user_id).all()
@@ -54,6 +61,9 @@ def get_todos() -> Response:
 @app.route("/todo/<string:obj_id>", methods=["GET"])
 @jwt_required
 def get_todo(obj_id: str) -> Response:
+    """
+    Return one Todo item.
+    """
     requester_email = get_jwt_identity()
     todo = app.session.query(models.Todo).filter_by(id=obj_id).first()
     if todo:
@@ -71,6 +81,9 @@ def get_todo(obj_id: str) -> Response:
 @app.route("/todo", methods=["POST"])
 @jwt_required
 def create_todo() -> Response:
+    """
+    Create one Todo item
+    """
     requester_user_id = get_jwt_identity()
     payload = request.json
     todo = models.Todo(text=payload["text"], owner=requester_user_id)
@@ -91,6 +104,9 @@ def create_todo() -> Response:
 @app.route("/todo/<string:obj_id>", methods=["PATCH"])
 @jwt_required
 def edit_todo(obj_id: str) -> Response:
+    """
+    Edit one todo item
+    """
     requester_user_id = get_jwt_identity()
     payload = request.json
     payload_text = payload["text"]
@@ -109,6 +125,9 @@ def edit_todo(obj_id: str) -> Response:
 @app.route("/todo/<string:obj_id>", methods=["DELETE"])
 @jwt_required
 def delete_todo(obj_id: str) -> Response:
+    """
+    Delete one Todo item.
+    """
     email = get_jwt_identity()
     todo = (
         app.session.query(models.Todo)
@@ -126,6 +145,9 @@ def delete_todo(obj_id: str) -> Response:
 
 @app.route("/auth/signup", methods=["POST"])
 def user_signup() -> Response:
+    """
+    Create user from credentials
+    """
     payload = request.json
     user = models.User(email=payload["email"], password=payload["password"])
     exists = app.session.query(models.User).filter_by(email=user.email).first()
@@ -149,6 +171,9 @@ def user_signup() -> Response:
 
 @app.route("/auth/login", methods=["POST"])
 def user_login() -> Response:
+    """
+    Login user with credentials
+    """
     payload = request.json
     user = (
         app.session.query(models.User)
@@ -172,7 +197,9 @@ def user_login() -> Response:
 @app.route("/protected", methods=["GET"])
 @jwt_required
 def protected() -> Response:
-    # Access the identity of the current user with get_jwt_identity
+    """
+    Returns current logged in user's email.
+    """
     current_user = get_jwt_identity()
     user = app.session.query(models.User).filter_by(id=current_user).first()
 

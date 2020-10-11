@@ -1,19 +1,30 @@
+"""
+Tests for Flask TODO API.
+"""
+
 from flask.testing import FlaskClient
 from typing import Dict
 
 
 class TestCreate:
     def test_create(self, client: FlaskClient, jwt_token: str) -> None:
+        """
+        It is possible to create a Todo item and this returns the new ID for that item.
+        """
         post_res = client.post(
             "/todo",
             json={"text": "test_text"},
             headers={"Authorization": jwt_token},
         )
         assert post_res.status_code == 201
+        assert post_res.get_json().keys() == set(["obj_id"])
 
 
 class TestGetAllTodos:
     def test_empty(self, client: FlaskClient, jwt_token: str) -> None:
+        """
+        An empty dictionary is returned when listing all Todo items if there are no Todo items.
+        """
         res = client.get("/todo", headers={"Authorization": jwt_token})
         data = res.get_json()
         assert res.status_code == 200
@@ -21,7 +32,9 @@ class TestGetAllTodos:
         assert data == expected_data
 
     def test_get_all(self, client: FlaskClient, jwt_token: str) -> None:
-
+        """
+        It is possible to retrieve all Todo items created by the user
+        """
         first_post = client.post(
             "/todo",
             json={"text": "test_text"},
@@ -47,6 +60,9 @@ class TestGetAllTodos:
 
 class TestEdit:
     def test_exists(self, client: FlaskClient, jwt_token: str) -> None:
+        """
+        It is possible to edit the text of a Todo item
+        """
         result_from_post = client.post(
             "/todo",
             json={"text": "test_text"},
@@ -67,6 +83,9 @@ class TestEdit:
         assert get_data == expected_data
 
     def test_does_not_exist(self, client: FlaskClient, jwt_token: str) -> None:
+        """
+        A 404 is returned when editing a Todo item that does not exist
+        """
         patch_result = client.patch(
             "/todo/1",
             json={"text": "test_text_edited"},
@@ -77,6 +96,9 @@ class TestEdit:
 
 class TestGetOneTodo:
     def test_exists(self, client: FlaskClient, jwt_token: str) -> None:
+        """
+        It is possible to retrieve a single Todo item with the object ID
+        """
         result_from_post = client.post(
             "/todo",
             json={"text": "test_text"},
@@ -92,12 +114,18 @@ class TestGetOneTodo:
         assert get_data == expected_data
 
     def test_does_not_exist(self, client: FlaskClient, jwt_token: str) -> None:
+        """
+        A 404 error is returned when getting a Todo item that does not exist
+        """
         res = client.get("/todo/1", headers={"Authorization": jwt_token})
         assert res.status_code == 404
 
 
 class TestDelete:
     def test_exists(self, client: FlaskClient, jwt_token: str) -> None:
+        """
+        It is possible to delete a Todo item with an object id
+        """
         result_from_post = client.post(
             "/todo",
             json={"text": "test_text"},
@@ -114,6 +142,9 @@ class TestDelete:
         assert get_data.status_code == 404
 
     def test_does_not_exist(self, client: FlaskClient, jwt_token: str) -> None:
+        """
+        A 404 is returned when deleting a Todo item that does not exist
+        """
         delete_res = client.delete(
             "/todo/1", headers={"Authorization": jwt_token}
         )
@@ -122,6 +153,9 @@ class TestDelete:
 
 class TestUserCreate:
     def test_user_does_not_exist(self, client: FlaskClient) -> None:
+        """
+        It is possible to create a new user account using an email and password
+        """
         credentials = {
             "email": "test@example.com",
             "password": "example_password",
@@ -130,6 +164,9 @@ class TestUserCreate:
         assert result_from_post.status_code == 201
 
     def test_user_already_exists(self, client: FlaskClient) -> None:
+        """
+        A 409 is returned when creating a new user account with an email address already in use.
+        """
         credentials = {
             "email": "test@example.com",
             "password": "example_password",
@@ -142,6 +179,9 @@ class TestUserCreate:
 
 class TestUserLogin:
     def test_user_login_success(self, client: FlaskClient) -> None:
+        """
+        It is possible to login with a user that has signed up, a JWT token is returned.
+        """
         credentials = {
             "email": "test@example.com",
             "password": "example_password",
@@ -152,6 +192,9 @@ class TestUserLogin:
         assert result_from_login.status_code == 200
 
     def test_user_login_wrong_credentials(self, client: FlaskClient) -> None:
+        """
+        A 401 is returned when logging in with the wrong password.
+        """
         credentials = {
             "email": "test@example.com",
             "password": "example_password",
@@ -169,6 +212,9 @@ class TestUserLogin:
         assert result_from_login.status_code == 401
 
     def test_user_identity_from_jwt_token(self, client: FlaskClient) -> None:
+        """
+        It is possible to retrieve the logged in user's email with a JWT token at the /protected endpoint.
+        """
         credentials = {
             "email": "test@example.com",
             "password": "example_password",
@@ -188,6 +234,9 @@ class TestUserLogin:
 
 class TestOwnershipOfTodos:
     def test_todo_of_other_user(self, client: FlaskClient) -> None:
+        """
+        A 403 is returned when a user attempts to retrieve a Todo item that they do not own.
+        """
         credentials = {
             "email": "test@example.com",
             "password": "example_password",
