@@ -6,7 +6,6 @@ import os
 from flask import Flask, Response, request
 import json
 from . import models
-from flask_bcrypt import Bcrypt
 from sqlalchemy.orm import scoped_session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -51,10 +50,6 @@ app.config["PROPAGATE_EXCEPTIONS"] = True
 # set a JWT secret key.
 app.config["JWT_SECRET_KEY"] = os.environ["JWT_SECRET_KEY"]
 
-# We use bcrypt because it is fairly secure.
-# We should switch to Argon2.
-# See https://github.com/calmoo/todo_api/issues/12
-bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
 

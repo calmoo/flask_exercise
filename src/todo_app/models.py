@@ -1,10 +1,11 @@
+from argon2.exceptions import VerifyMismatchError
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from flask_bcrypt import generate_password_hash, check_password_hash
-from typing import Any
+from argon2 import PasswordHasher
 
 Base = declarative_base()
+ph = PasswordHasher()
 
 
 class Todo(Base):
@@ -22,7 +23,11 @@ class User(Base):
     todos = relationship("Todo")
 
     def hash_password(self) -> None:
-        self.password = generate_password_hash(self.password).decode("utf8")
+        self.password = ph.hash(self.password)
 
-    def check_password(self, password: str) -> Any:
-        return check_password_hash(self.password, password)
+    def check_password(self, password: str) -> bool:
+        try:
+            ph.verify(self.password, password)
+            return True
+        except VerifyMismatchError:
+            return False
