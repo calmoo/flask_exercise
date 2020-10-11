@@ -21,7 +21,8 @@ import datetime
 
 # We use SQLite in memory.
 # This has a downside that the database is lost when the server is restarted.
-# In the future we want to use an on-disk database, with a location set by an environment variable.
+# In the future we want to use an on-disk database.
+# Set on-disk database with a location set by an environment variable.
 # See https://github.com/calmoo/todo_api/issues/9.
 SQLALCHEMY_DATABASE_URL = "sqlite://"
 app = Flask(__name__)
@@ -41,9 +42,13 @@ app.config["PROPAGATE_EXCEPTIONS"] = True
 
 # The JWT_SECRET_KEY is used to create a user's session token.
 # If this leaks then a bad actor could impersonate any user.
-# We use JWT because it allows a user to authenticate with a token provided by the server after login
-# We use an environment variable so that each instance of the server can have a different secret key.
-# We do not have a default secret key because if a user runs this in production we do not want there to be any chance that they have not set a JWT secret key.
+# We use JWT because it allows a user to authenticate with a token provided by
+# the server after login
+# We use an environment variable so that each instance of the server can have
+# a different secret key.
+# We do not have a default secret key because if a user runs this in production
+# we do not want there to be any chance that they have not
+# set a JWT secret key.
 app.config["JWT_SECRET_KEY"] = os.environ["JWT_SECRET_KEY"]
 
 # We use bcrypt because it is fairly secure.
