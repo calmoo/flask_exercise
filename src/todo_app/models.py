@@ -11,11 +11,11 @@ class Todo(Base):
     __tablename__ = "Todos"
     id = Column(Integer, unique=True, primary_key=True, autoincrement=True)
     text = Column(String(), nullable=False)
-    owner = Column(Integer, ForeignKey("users.id"))
+    owner = Column(Integer, ForeignKey("Users.id"))
 
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "Users"
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(255), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
