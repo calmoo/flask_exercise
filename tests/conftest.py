@@ -5,7 +5,7 @@ Fixtures for tests.
 import os
 import pytest
 
-os.environ['JWT_SECRET_KEY'] = 'example-secret-key'
+os.environ["JWT_SECRET_KEY"] = "example-secret-key"
 
 from todo_app.app import app as flask_app
 from flask.app import Flask
