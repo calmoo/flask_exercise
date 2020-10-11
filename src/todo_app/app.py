@@ -11,7 +11,6 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
-from .models import Base
 from flask_jwt_extended import (
     JWTManager,
     create_access_token,
@@ -20,22 +19,38 @@ from flask_jwt_extended import (
 )
 import datetime
 
+# We use SQLite in memory.
+# This has a downside that the database is lost when the server is restarted.
+# In the future we want to use an on-disk database, with a location set by an environment variable.
+# See https://github.com/calmoo/todo_api/issues/9.
 SQLALCHEMY_DATABASE_URL = "sqlite://"
+app = Flask(__name__)
 
+# Start the database and create database tables.
+# This is inspired by
+# https://towardsdatascience.com/use-flask-and-sqlalchemy-not-flask-sqlalchemy-5a64fafe22a4
+# We have to use the StaticPool class to run the database in memory.
 engine = create_engine(SQLALCHEMY_DATABASE_URL, poolclass=StaticPool)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base.metadata.create_all(engine)
-
-app = Flask(__name__)
-app.config["PROPAGATE_EXCEPTIONS"] = True
-app.config["JWT_SECRET_KEY"] = os.environ.get(
-    "JWT_SECRET_KEY",
-    "backup-secret-key",
-)
 models.Base.metadata.create_all(bind=engine)
+app.session = scoped_session(SessionLocal)
+
+# We use "PROPAGATE_EXCEPTIONS" so that errors are sent to the client.
+# This allows us to put breakpoints in endpoints.
+app.config["PROPAGATE_EXCEPTIONS"] = True
+
+# The JWT_SECRET_KEY is used to create a user's session token.
+# If this leaks then a bad actor could impersonate any user.
+# We use JWT because it allows a user to authenticate with a token provided by the server after login
+# We use an environment variable so that each instance of the server can have a different secret key.
+# We do not have a default secret key because if a user runs this in production we do not want there to be any chance that they have not set a JWT secret key.
+app.config["JWT_SECRET_KEY"] = os.environ["JWT_SECRET_KEY"]
+
+# We use bcrypt because it is fairly secure.
+# We should switch to Argon2.
+# See https://github.com/calmoo/todo_api/issues/12
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
-app.session = scoped_session(SessionLocal)
 
 
 @app.route("/todo", methods=["GET"])
