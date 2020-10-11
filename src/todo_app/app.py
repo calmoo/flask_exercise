@@ -68,12 +68,12 @@ def get_todos() -> Response:
     all_todos = (
         app.session.query(models.Todo).filter_by(owner=requester_user_id).all()
     )
-    my_dict = dict()
+    todo_list = []
     for item in all_todos:
-        my_dict[item.id] = item.text
+        todo_list.append({item.id: item.text})
 
     return Response(
-        response=json.dumps(my_dict),
+        response=json.dumps(todo_list),
         mimetype="application/json",
     )
 
