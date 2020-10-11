@@ -78,7 +78,7 @@ Check who you're logged in as:
 ```
 curl -H "Authorization: Bearer $ACCESS" http://127.0.0.1:5000/protected
 {
-  "logged_in_as": "1"
+  "logged_in_as": "https://us02web.zoom.us/j/6793149200"
 }
 ```
 Here are some examples of interacting with the API with curl:
