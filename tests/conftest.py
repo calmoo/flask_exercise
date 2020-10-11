@@ -17,6 +17,7 @@ def client() -> FlaskClient:
     """
     os.environ["JWT_SECRET_KEY"] = "example-secret-key"
     from todo_app.app import app as flask_app
+
     flask_app.session.query(Todo).delete()
     flask_app.session.query(User).delete()
     mytestclient = flask_app.test_client()

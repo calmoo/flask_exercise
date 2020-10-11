@@ -3,7 +3,7 @@ Tests for Flask TODO API.
 """
 
 from flask.testing import FlaskClient
-from typing import Dict
+from typing import List
 
 
 class TestCreate:
@@ -30,7 +30,7 @@ class TestGetAllTodos:
         res = client.get("/todo", headers={"Authorization": jwt_token})
         data = res.get_json()
         assert res.status_code == 200
-        expected_data: Dict = {}
+        expected_data: List = []
         assert data == expected_data
 
     def test_get_all(self, client: FlaskClient, jwt_token: str) -> None:
@@ -53,10 +53,10 @@ class TestGetAllTodos:
         res = client.get("/todo", headers={"Authorization": jwt_token})
         get_data = res.get_json()
         assert res.status_code == 200
-        expected_data: Dict = {
-            first_obj_id: "test_text",
-            second_obj_id: "test_text_2",
-        }
+        expected_data = [
+            {first_obj_id: "test_text"},
+            {second_obj_id: "test_text_2"},
+        ]
         assert get_data == expected_data
 
 
