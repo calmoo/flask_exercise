@@ -9,7 +9,8 @@ from typing import Dict
 class TestCreate:
     def test_create(self, client: FlaskClient, jwt_token: str) -> None:
         """
-        It is possible to create a Todo item and this returns the new ID for that item.
+        It is possible to create a Todo item and this returns the new ID for
+        that item.
         """
         post_res = client.post(
             "/todo",
@@ -23,7 +24,8 @@ class TestCreate:
 class TestGetAllTodos:
     def test_empty(self, client: FlaskClient, jwt_token: str) -> None:
         """
-        An empty dictionary is returned when listing all Todo items if there are no Todo items.
+        An empty dictionary is returned when listing all Todo items if there
+        are no Todo items.
         """
         res = client.get("/todo", headers={"Authorization": jwt_token})
         data = res.get_json()
@@ -165,7 +167,8 @@ class TestUserCreate:
 
     def test_user_already_exists(self, client: FlaskClient) -> None:
         """
-        A 409 is returned when creating a new user account with an email address already in use.
+        A 409 is returned when creating a new user account with an email
+        address already in use.
         """
         credentials = {
             "email": "test@example.com",
@@ -180,7 +183,8 @@ class TestUserCreate:
 class TestUserLogin:
     def test_user_login_success(self, client: FlaskClient) -> None:
         """
-        It is possible to login with a user that has signed up, a JWT token is returned.
+        It is possible to login with a user that has signed up, a JWT token is
+        returned.
         """
         credentials = {
             "email": "test@example.com",
@@ -213,7 +217,8 @@ class TestUserLogin:
 
     def test_user_identity_from_jwt_token(self, client: FlaskClient) -> None:
         """
-        It is possible to retrieve the logged in user's email with a JWT token at the /protected endpoint.
+        It is possible to retrieve the logged in user's email with a JWT token
+        at the /protected endpoint.
         """
         credentials = {
             "email": "test@example.com",
@@ -235,7 +240,8 @@ class TestUserLogin:
 class TestOwnershipOfTodos:
     def test_todo_of_other_user(self, client: FlaskClient) -> None:
         """
-        A 403 is returned when a user attempts to retrieve a Todo item that they do not own.
+        A 403 is returned when a user attempts to retrieve a Todo item that
+        they do not own.
         """
         credentials = {
             "email": "test@example.com",
